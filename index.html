@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClaimHeart - Complete Project Breakdown</title>
+<style>
+  body { font-family: Georgia, serif; font-size: 18px; line-height: 1.7; background: #f9f9f9; color: #111; margin: 0; padding: 0; }
+  .page { max-width: 960px; margin: 0 auto; padding: 40px 30px; }
+  h1 { font-size: 3rem; border-bottom: 5px solid #111; padding-bottom: 10px; margin-top: 60px; }
+  h2 { font-size: 2.2rem; border-bottom: 3px solid #444; padding-bottom: 6px; margin-top: 50px; }
+  h3 { font-size: 1.7rem; color: #222; margin-top: 35px; border-left: 6px solid #111; padding-left: 14px; }
+  h4 { font-size: 1.35rem; color: #333; margin-top: 25px; }
+  p { font-size: 1.1rem; }
+  code { background: #e8e8e8; padding: 3px 8px; border-radius: 4px; font-size: 1rem; font-family: monospace; }
+  pre { background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 6px; overflow-x: auto; font-size: 0.95rem; line-height: 1.6; }
+  .file-box { background: #fff; border: 2px solid #ccc; border-radius: 6px; padding: 20px 25px; margin: 15px 0; }
+  .file-box .filename { font-size: 1.3rem; font-weight: bold; font-family: monospace; color: #000; margin-bottom: 8px; }
+  .file-box .desc { font-size: 1.05rem; color: #333; }
+  .arrow { font-size: 2rem; text-align: center; margin: 10px 0; }
+  .box { background: #fff; border: 2px solid #111; padding: 18px 22px; margin: 12px 0; border-radius: 4px; }
+  .box-grey { background: #f0f0f0; border: 1px solid #bbb; padding: 14px 18px; margin: 10px 0; border-radius: 4px; }
+  .tag { display: inline-block; background: #111; color: #fff; padding: 3px 10px; font-size: 0.9rem; border-radius: 3px; margin: 2px; }
+  .tag-blue { background: #1a5fa8; }
+  .tag-green { background: #1a7a1a; }
+  .tag-red { background: #8b1a1a; }
+  .tag-orange { background: #a85a00; }
+  table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+  th { background: #111; color: #fff; padding: 12px 16px; font-size: 1.05rem; text-align: left; }
+  td { padding: 10px 16px; border-bottom: 1px solid #ddd; font-size: 1rem; }
+  tr:nth-child(even) { background: #f4f4f4; }
+  .flow-step { background: #fff; border: 3px solid #111; padding: 16px 20px; margin: 8px 0; border-radius: 4px; }
+  .flow-step .step-num { font-size: 1.5rem; font-weight: bold; color: #555; margin-right: 10px; }
+  .note { background: #fffbe6; border-left: 6px solid #e6b800; padding: 14px 18px; margin: 16px 0; font-size: 1.05rem; }
+  ul { font-size: 1.05rem; }
+  li { margin-bottom: 6px; }
+  .toc a { color: #111; font-size: 1.1rem; text-decoration: none; display: block; padding: 4px 0; }
+  .toc a:hover { text-decoration: underline; }
+  .section-divider { height: 4px; background: #111; margin: 60px 0; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<h1>🏥 ClaimHeart — Complete Project Breakdown</h1>
+<p style="font-size:1.3rem">This document explains every file, folder, pipeline, and workflow in the ClaimHeart codebase. Written in plain language so you can understand exactly what is happening at every level of the system.</p>
+
+<div class="box">
+<strong>What is ClaimHeart?</strong><br>
+ClaimHeart is an AI-powered medical insurance claims processing platform. It reads scanned hospital documents, checks them against insurance policies, detects fraud, and writes decision letters to patients — all automatically. Three dashboards serve three users: the Insurance Company, the Hospital/TPA, and the Patient.
+</div>
+
+<h2>Table of Contents</h2>
+<div class="toc" style="background:#f4f4f4; padding:20px; border-radius:4px;">
+  <a href="#root">1. Root Project Structure</a>
+  <a href="#backend-overview">2. Backend Overview</a>
+  <a href="#main-py">3. backend/app/main.py — FastAPI Entry Point</a>
+  <a href="#agents">4. backend/app/agents/ — The 4 AI Agents</a>
+  <a href="#api-routes">5. backend/app/api/routes/ — HTTP Endpoints</a>
+  <a href="#services">6. backend/app/services/ — Business Logic Layer</a>
+  <a href="#tasks">7. backend/app/tasks/ — Async Celery Workers</a>
+  <a href="#utils">8. backend/app/utils/ — Utility Functions</a>
+  <a href="#schemas">9. backend/app/schemas/ — Data Structures</a>
+  <a href="#db">10. backend/app/db/ — Database Layer</a>
+  <a href="#ml">11. backend/app/ml/ — Machine Learning</a>
+  <a href="#pipelines">12. backend/app/pipelines/ — RAG Pipeline</a>
+  <a href="#core">13. backend/app/core/ — Config, Logging, Security</a>
+  <a href="#backend-scripts">14. Backend Standalone Scripts</a>
+  <a href="#frontend-overview">15. Frontend Overview</a>
+  <a href="#next-app">16. frontend/app/ — Next.js Pages and Routes</a>
+  <a href="#components">17. frontend/components/ — React Components</a>
+  <a href="#lib">18. frontend/lib/ — Utilities and API Clients</a>
+  <a href="#store">19. frontend/store/ — Zustand State Management</a>
+  <a href="#hooks">20. frontend/hooks/ — Custom React Hooks</a>
+  <a href="#types">21. frontend/types/ — TypeScript Types</a>
+  <a href="#data-flow">22. Complete Data Flow — End to End</a>
+  <a href="#pipeline-flow">23. The 5-Agent Pipeline Step by Step</a>
+  <a href="#file-connections">24. How Files Talk to Each Other</a>
+  <a href="#demo-workflow">25. Demo Workflow (3 Cases)</a>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ========== 1. ROOT STRUCTURE ========== -->
+<h1 id="root">1. Root Project Structure</h1>
+<p>The project lives at <code>claimHeart/</code>. Here are the top-level folders and what they do:</p>
+
+<table>
+  <tr><th>Folder / File</th><th>What It Is</th><th>Purpose</th></tr>
+  <tr><td><code>backend/</code></td><td>Python backend</td><td>FastAPI server, AI agents, OCR, fraud detection, database</td></tr>
+  <tr><td><code>frontend/</code></td><td>Next.js frontend</td><td>Three dashboards (insurer, hospital, patient), React UI</td></tr>
+  <tr><td><code>docker/</code></td><td>Docker configs</td><td>PostgreSQL, Redis, Prometheus, Grafana config files</td></tr>
+  <tr><td><code>docs/</code></td><td>Documentation</td><td>Architecture diagrams, workflow docs, agent design notes</td></tr>
+  <tr><td><code>.github/</code></td><td>GitHub automation</td><td>CI/CD workflows, a script to create GitHub issues from markdown</td></tr>
+  <tr><td><code>docker-compose.yml</code></td><td>Docker orchestration</td><td>Spins up all services together (backend, DB, cache, monitoring)</td></tr>
+  <tr><td><code>README.md</code></td><td>Project overview</td><td>High-level description of what ClaimHeart does</td></tr>
+  <tr><td><code>CONTRIBUTING.md</code></td><td>Team guide</td><td>Rules for how team members contribute to this private repo</td></tr>
+  <tr><td><code>LICENSE</code></td><td>Legal</td><td>Proprietary license — not open source</td></tr>
+</table>
+
+<div class="note">The project is split into <strong>backend</strong> (Python/FastAPI) and <strong>frontend</strong> (Next.js/React). They talk to each other via HTTP API calls. Right now, the frontend uses localStorage to store data for the demo — the backend is partially built and handles OCR/extraction.</div>
+
+<div class="section-divider"></div>
+
+<!-- ========== 2. BACKEND OVERVIEW ========== -->
+<h1 id="backend-overview">2. Backend Overview</h1>
+<p>The backend is inside <code>backend/</code> and is a Python FastAPI application. Here is its full folder structure and what each subfolder does:</p>
+
+<pre>
+backend/
+├── app/
+│   ├── main.py              ← FastAPI app starts here
+│   ├── agents/              ← 4 AI agents (extractor, policy, investigator, mediator)
+│   ├── api/                 ← HTTP routes (claims, OCR, fraud, letters, health)
+│   ├── core/                ← Config, logging, security, OCR engine
+│   ├── db/                  ← Database models, migrations, repositories
+│   ├── ml/                  ← Isolation Forest fraud detection
+│   ├── pipelines/           ← LlamaIndex RAG pipeline for policy search
+│   ├── schemas/             ← Document schemas (bill, claim, discharge, pharmacy)
+│   ├── services/            ← Business logic (extractor agent, LLM parser)
+│   ├── tasks/               ← Async Celery tasks (extraction, analysis)
+│   └── utils/               ← OCR, image processing, PDF helpers
+├── tests/                   ← Test files for agents and API
+├── requirements.txt         ← Python package dependencies
+├── Dockerfile               ← Docker container setup
+├── batch_extract.py         ← Script: process many images at once
+├── extract_image.py         ← Script: process one image
+├── extract_ocr.py           ← Script: flexible OCR with command-line args
+├── process_image.py         ← Script: process image and save JSON
+└── test_api.py              ← Script: manually test API endpoints
+</pre>
+
+<div class="section-divider"></div>
+
+<!-- ========== 3. MAIN.PY ========== -->
+<h1 id="main-py">3. backend/app/main.py — FastAPI Entry Point</h1>
+
+<div class="file-box">
+  <div class="filename">backend/app/main.py</div>
+  <div class="desc">This is the FIRST file that runs when you start the server. It creates the FastAPI application, adds CORS middleware (so the frontend can call the backend from a different port), and registers all the URL routes.</div>
+</div>
+
+<p>When you run <code>uvicorn app.main:app --reload</code>, Python reads this file. Here is what it does step by step:</p>
+
+<div class="flow-step"><span class="step-num">1.</span> Creates a <code>FastAPI()</code> app with a title, description, and version.</div>
+<div class="flow-step"><span class="step-num">2.</span> Adds <code>CORSMiddleware</code> — this allows <code>http://localhost:3000</code> (the Next.js frontend) to call <code>http://localhost:8000</code> (the backend) without browser security errors.</div>
+<div class="flow-step"><span class="step-num">3.</span> Imports routers from <code>api/routes/</code> and registers them with URL prefixes:
+  <ul>
+    <li><code>health.router</code> → handles <code>/api/health</code></li>
+    <li><code>ocr.router</code> → handles <code>/api/ocr/upload</code> and <code>/api/ocr/process-local</code></li>
+    <li><code>claims.router</code> → handles <code>/api/claims/...</code></li>
+  </ul>
+</div>
+<div class="flow-step"><span class="step-num">4.</span> Adds a root route <code>GET /</code> that returns a simple JSON confirming the server is running.</div>
+
+<div class="note"><strong>Why this matters:</strong> Every API call from the frontend or from testing goes through routes registered in main.py. If a route is not registered here, it doesn't exist. This file is the traffic controller of the entire backend.</div>
+
+<div class="section-divider"></div>
+
+<!-- ========== 4. AGENTS ========== -->
+<h1 id="agents">4. backend/app/agents/ — The 4 AI Agents</h1>
+<p>This folder contains the 4 core AI agents that process every claim. Each agent is a subfolder with its own logic. They are meant to run in parallel, though right now only the Extractor Agent has real code written.</p>
+
+<h2>4.1 Extractor Agent — <code>agents/extractor/</code></h2>
+<p>This agent reads uploaded medical documents (PDFs, images) and turns them into structured data (JSON).</p>
+
+<div class="file-box">
+  <div class="filename">agents/extractor/agent.py</div>
+  <div class="desc">The main function here is <code>extractor_agent(file_path)</code>. It does two things in sequence: (1) calls <code>extract_text_from_image()</code> from <code>utils/ocr.py</code> to get raw text from the image using EasyOCR, then (2) calls <code>parse_medical_text()</code> from <code>utils/parser.py</code> to find patient name, age, medications, diagnosis etc. from that raw text. Returns a dict with both <code>raw_text</code> and <code>structured_data</code>.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">agents/extractor/extractor_agent.py</div>
+  <div class="desc">Currently empty — this is where a more advanced version of the extractor (using Vision AI like GPT-4o or Gemini) was planned to go. The actual working code is in agent.py for now.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">agents/extractor/output_schema.py</div>
+  <div class="desc">Empty — was planned to hold the Pydantic schema defining what the extractor's output JSON must look like (patient_id, diagnosis, medications, etc.)</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">agents/extractor/pdf_parser.py</div>
+  <div class="desc">Empty — was planned to hold PDF-specific parsing logic (splitting PDF pages, converting to images). Currently PyMuPDF is used inline.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">agents/extractor/prompts.py</div>
+  <div class="desc">Empty — was planned to hold the LLM prompt that tells GPT/Gemini what fields to extract from medical documents.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">agents/extractor/vision_client.py</div>
+  <div class="desc">Empty — was planned to hold the API client for calling OpenAI Vision or Google Gemini Vision APIs.</div>
+</div>
+
+<h2>4.2 Policy Agent — <code>agents/policy/</code></h2>
+<p>This agent reads insurance policy PDFs and checks if a claim is covered. It uses a RAG (Retrieval Augmented Generation) system — it searches through the policy text to find the exact clause that applies to the claim. ALL files here are currently empty but the architecture is planned.</p>
+
+<table>
+  <tr><th>File</th><th>Planned Purpose</th></tr>
+  <tr><td><code>policy_agent.py</code></td><td>Main agent function — takes claim data + policy, returns coverage decision with page citations</td></tr>
+  <tr><td><code>vector_store.py</code></td><td>Wraps Pinecone (vector database) — stores embedded policy text chunks for semantic search</td></tr>
+  <tr><td><code>document_loader.py</code></td><td>Reads policy PDF files, splits them into chunks, and feeds them to the vector store</td></tr>
+  <tr><td><code>output_schema.py</code></td><td>Defines the JSON format of the policy agent's output (covered_amount, citations, reason)</td></tr>
+  <tr><td><code>prompts.py</code></td><td>The LLM prompt that forces the AI to cite exact policy sections before making decisions</td></tr>
+</table>
+
+<h2>4.3 Investigator Agent — <code>agents/investigator/</code></h2>
+<p>This agent detects fraud. It combines statistical anomaly detection (Isolation Forest ML model) with LLM reasoning. ALL files here are currently empty but fully planned.</p>
+
+<table>
+  <tr><th>File</th><th>Planned Purpose</th></tr>
+  <tr><td><code>investigator_agent.py</code></td><td>Main fraud agent — runs rules + ML + LLM reasoning, outputs a fraud score and evidence list</td></tr>
+  <tr><td><code>anomaly_detector.py</code></td><td>Runs scikit-learn Isolation Forest on billing amounts, procedure counts, hospitalization days to find statistical outliers</td></tr>
+  <tr><td><code>rule_engine.py</code></td><td>Hard rule checks — duplicate claim detection, waiting period violation, test count vs protocol limits</td></tr>
+  <tr><td><code>output_schema.py</code></td><td>Defines the fraud output format (fraud_score, fraud_types, evidence, recommendation)</td></tr>
+  <tr><td><code>prompts.py</code></td><td>LLM prompt that translates statistical findings into readable evidence paragraphs</td></tr>
+</table>
+
+<h2>4.4 Mediator Agent — <code>agents/mediator/</code></h2>
+<p>This agent writes the final letters to patients, queries to hospitals, and summaries for insurers. Takes the decisions from other agents and turns them into human-readable text. ALL files here are currently empty.</p>
+
+<table>
+  <tr><th>File</th><th>Planned Purpose</th></tr>
+  <tr><td><code>mediator_agent.py</code></td><td>Main agent — reviews outputs of all previous agents and drafts communications for each stakeholder</td></tr>
+  <tr><td><code>letter_generator.py</code></td><td>Fills in letter templates with claim-specific variables (amount, reason, patient name)</td></tr>
+  <tr><td><code>output_schema.py</code></td><td>Defines output format (patient_letter, hospital_query, insurer_summary)</td></tr>
+  <tr><td><code>prompts.py</code></td><td>Behavioral prompts — instructs the LLM to be empathetic to patients, formal with hospitals, concise with insurers</td></tr>
+</table>
+
+<div class="section-divider"></div>
+
+<!-- ========== 5. API ROUTES ========== -->
+<h1 id="api-routes">5. backend/app/api/routes/ — HTTP Endpoints</h1>
+<p>These files define the URLs that the frontend (or external systems) can call. Each file is an APIRouter that handles one domain of functionality.</p>
+
+<div class="file-box">
+  <div class="filename">api/routes/health.py</div>
+  <div class="desc"><strong>GET /api/health</strong> — Returns <code>{"status": "healthy", "service": "ClaimHeart API", "version": "1.0.0"}</code>. Used by load balancers and monitoring tools to check if the server is alive. This is the only route with real code beyond OCR.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">api/routes/ocr.py</div>
+  <div class="desc">Two routes — both have working code:
+    <ul>
+      <li><strong>POST /api/ocr/upload</strong> — Accepts a file upload (PDF, JPG, PNG). Validates file type and size (max 10MB). Saves to a temp folder, calls <code>process_document()</code>, then deletes the temp file. Returns extracted data.</li>
+      <li><strong>POST /api/ocr/process-local</strong> — Accepts a JSON body with a <code>local_path</code> field. Finds the file on disk and runs OCR on it. Useful for testing without uploading.</li>
+    </ul>
+    Both routes call <code>process_document()</code> from <code>tasks/extraction.py</code> which calls <code>extractor_agent()</code> from <code>agents/extractor/agent.py</code>.
+  </div>
+</div>
+
+<div class="file-box">
+  <div class="filename">api/routes/claims.py</div>
+  <div class="desc">Currently empty — planned to handle claim submission, claim status retrieval, claim updates. This is the main claims lifecycle API.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">api/routes/fraud.py</div>
+  <div class="desc">Currently empty — planned to expose fraud risk scores, fraud flags, and investigation status for each claim.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">api/routes/letters.py</div>
+  <div class="desc">Currently empty — planned to expose generated letters, allow insurers to edit them, and track which letters were sent.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">api/routes/policies.py</div>
+  <div class="desc">Currently empty — planned to handle uploading and indexing insurance policy PDFs into the vector database.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">api/routes/users.py</div>
+  <div class="desc">Currently empty — planned to handle user registration, login, and role management.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">api/dependencies.py</div>
+  <div class="desc">Currently empty — planned to hold FastAPI dependency injection functions (e.g., get the current user from a JWT token, get a database session).</div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ========== 6. SERVICES ========== -->
+<h1 id="services">6. backend/app/services/ — Business Logic Layer</h1>
+<p>Services sit between the API routes and the agents/database. They coordinate multiple operations together.</p>
+
+<div class="file-box">
+  <div class="filename">services/extractor_agent.py</div>
+  <div class="desc">
+    <strong>This is the most complete service file.</strong> Contains the <code>ExtractorAgent</code> class that uses Google Gemini AI to extract structured data from medical documents.
+    <br><br>
+    How it works:
+    <ol>
+      <li>Takes raw OCR text as input</li>
+      <li>Calls <code>_identify_document_type()</code> — sends the first 1000 characters to Gemini and asks it to classify whether this is a "bill", "diagnostic_report", "discharge_summary", "pharmacy", or "claim"</li>
+      <li>Based on the document type, selects the matching schema from <code>schemas/</code> folder (e.g., BILL_PROMPT for bills, DISCHARGE_SCHEMA for discharge summaries)</li>
+      <li>Sends the full OCR text + the schema prompt to Gemini with <code>response_mime_type="application/json"</code> to force JSON output</li>
+      <li>Returns the extracted structured JSON</li>
+    </ol>
+    Uses the <code>google-generativeai</code> library with <code>gemini-2.0-flash</code> model. API key comes from <code>GEMINI_API_KEY</code> environment variable.
+  </div>
+</div>
+
+<div class="file-box">
+  <div class="filename">services/llm_parser.py</div>
+  <div class="desc">An earlier/alternative extractor using OpenAI GPT-4o-mini instead of Gemini. Sends raw text to ChatGPT and asks for a JSON with hospital_name, total_charges, insurance_portion, patient_portion, and billing items. Note: This file prints the API key in the console (debug artifact — should be removed before production).</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">services/claim_service.py</div>
+  <div class="desc">Currently empty — planned to coordinate the full claim lifecycle: receiving a new claim, triggering extraction, triggering policy check, fraud check, and letter generation.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">services/fraud_service.py, policy_service.py, letter_service.py</div>
+  <div class="desc">Currently empty — planned to be service classes for each agent domain, coordinating database reads/writes and agent calls.</div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ========== 7. TASKS ========== -->
+<h1 id="tasks">7. backend/app/tasks/ — Async Celery Workers</h1>
+<p>Tasks are functions that run in the background asynchronously. When a hospital uploads a 20-page PDF, the HTTP request shouldn't wait 30 seconds — instead it queues the work as a task and returns immediately. Celery (backed by Redis) handles this queuing.</p>
+
+<div class="file-box">
+  <div class="filename">tasks/extraction.py</div>
+  <div class="desc">
+    The only task with working code. Contains <code>process_document(file_path)</code> which is a thin wrapper — it just calls <code>extractor_agent(file_path)</code> and returns the result. This is the entry point that <code>api/routes/ocr.py</code> calls.
+    <br><br>
+    <strong>The call chain:</strong> <code>OCR route</code> → <code>process_document()</code> → <code>extractor_agent()</code> → <code>extract_text_from_image()</code> + <code>parse_medical_text()</code>
+  </div>
+</div>
+
+<div class="file-box">
+  <div class="filename">tasks/analysis.py</div>
+  <div class="desc">Currently empty — planned to hold the async task that runs the Policy Agent and Fraud Investigator Agent after extraction is complete.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">tasks/communication.py</div>
+  <div class="desc">Currently empty — planned to hold the async task that runs the Mediator Agent and sends letters/notifications after analysis is complete.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">tasks/worker.py</div>
+  <div class="desc">Currently empty — planned to initialize the Celery application with Redis as the message broker. Would look something like: <code>celery_app = Celery("claimheart", broker="redis://localhost:6379/0")</code></div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ========== 8. UTILS ========== -->
+<h1 id="utils">8. backend/app/utils/ — Utility Functions</h1>
+<p>Pure helper functions used by agents and services. No business logic — just tools.</p>
+
+<div class="file-box">
+  <div class="filename">utils/ocr.py</div>
+  <div class="desc">
+    <strong>Most important utility file.</strong> Contains <code>extract_text_from_image(image_path)</code>.
+    <br><br>
+    Uses <strong>EasyOCR</strong> (a Python library) to read text from images. EasyOCR supports handwritten and low-quality scanned documents. The function:
+    <ol>
+      <li>Creates an EasyOCR Reader for English language at module load time (global variable — only done once)</li>
+      <li>Calls <code>reader.readtext(image_path, detail=0)</code> which returns a list of text strings found in the image</li>
+      <li>Joins them all with newlines and returns a single string</li>
+    </ol>
+    <strong>Note:</strong> The file also has a commented-out version using Tesseract OCR (a different OCR library). EasyOCR was chosen because it handles messy scanned documents better.
+  </div>
+</div>
+
+<div class="file-box">
+  <div class="filename">utils/image_processing.py</div>
+  <div class="desc">
+    Contains <code>preprocess_for_ocr(image_path)</code> which improves image quality before OCR:
+    <ol>
+      <li>Reads the image in grayscale using OpenCV</li>
+      <li>Scales it up 2x (so small text becomes bigger and easier to read)</li>
+      <li>Applies Adaptive Thresholding — converts grey pixels to pure black or white. This removes shadows and uneven lighting common in scanned documents</li>
+    </ol>
+    Returns a PIL Image object ready for Tesseract OCR. Used by <code>core/ocr_engine.py</code>.
+  </div>
+</div>
+
+<div class="file-box">
+  <div class="filename">utils/parser.py</div>
+  <div class="desc">
+    <strong>The largest utility file.</strong> Contains <code>parse_medical_text(raw_text)</code> which calls 7 sub-functions to extract specific fields using regex patterns:
+    <ul>
+      <li><code>extract_patient_name()</code> — looks for patterns like "Patient Name: John Doe" or names before "(ICD"</li>
+      <li><code>extract_age()</code> — looks for "age: 32" or "32 years"</li>
+      <li><code>extract_gender()</code> — looks for "sex: male/female"</li>
+      <li><code>extract_medical_record_number()</code> — looks for patterns like "CCH-OPD-2026-09341"</li>
+      <li><code>extract_hospital_info()</code> — looks for hospital/clinic keywords and phone numbers</li>
+      <li><code>extract_diagnosis()</code> — looks for "diagnosis:", "condition:", "patient with" patterns</li>
+      <li><code>extract_medications()</code> — looks for "Tab", "Inj", "Syp" prefixes + known drug names like Paracetamol, Pantoprazole</li>
+      <li><code>extract_vital_signs()</code> — looks for "BP:", "pulse:", "temperature:" patterns</li>
+      <li><code>extract_dates()</code> — looks for admission date, discharge date, prescription date</li>
+    </ul>
+    Returns a dictionary with all these fields. Many patterns handle OCR errors (e.g., "turnule" instead of "female", "rutu" instead of "pulse").
+  </div>
+</div>
+
+<div class="file-box">
+  <div class="filename">utils/cms_baseline.py, utils/cost_baselines.py</div>
+  <div class="desc">Currently empty — planned to hold regional cost reference data (e.g., average cost of appendectomy in Mumbai = ₹50,000). The Fraud Investigator Agent would use this to detect when a hospital charges 5x the normal rate.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">utils/redaction.py</div>
+  <div class="desc">Currently empty — planned to use Microsoft Presidio to strip PII (patient name, phone, ID numbers) from documents before sending them to external AI APIs. Required for HIPAA/DPDP compliance.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">utils/s3_helpers.py, utils/textract.py, utils/pdf_helpers.py</div>
+  <div class="desc">All currently empty. Planned for: AWS S3 file storage, AWS Textract OCR as fallback, and PDF-specific parsing helpers (page splitting, image conversion).</div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ========== 9. SCHEMAS ========== -->
+<h1 id="schemas">9. backend/app/schemas/ — Data Structures</h1>
+<p>Schemas define what fields different types of medical documents contain. They are used as prompts for AI models — they tell the AI what to look for.</p>
+
+<div class="file-box">
+  <div class="filename">schemas/bill_schema.py</div>
+  <div class="desc">Contains <code>BILL_PROMPT</code> — a text prompt that tells Gemini to extract: hospital details (name, address, registration), patient details (name, age, gender, ID), billing items (description, quantity, unit price, tax, total), totals (subtotal, tax, discount, grand total), and dates (bill date, admission, discharge).</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">schemas/claim_schema.py</div>
+  <div class="desc">Contains <code>CLAIM_SCHEMA</code> — a dictionary template showing the shape of a claim record: claim_id, policy_number, claim_type (Pre-Authorization or Reimbursement), hospital network status, estimated cost, diagnosis, and whether it's an emergency.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">schemas/discharge_schema.py</div>
+  <div class="desc">Contains <code>DISCHARGE_SCHEMA</code> — template for discharge summaries: admission date, discharge date, reason for admission, treatment given, condition at discharge, follow-up advice, and ICD-10 codes.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">schemas/pharmacy_schema.py</div>
+  <div class="desc">Contains <code>PHARMACY_PROMPT</code> — prompt for pharmacy bills: pharmacy name, GST number, bill number, list of medicines (name, batch, expiry, quantity, price, tax), and prescribing doctor.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">schemas/report_schema.py</div>
+  <div class="desc">Contains <code>REPORT_SCHEMA</code> — template for lab test reports: test name, test date, observed values (parameter, result, unit, reference range), impression (doctor's conclusion), and pathologist name.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">schemas/fraud.py, schemas/letter.py, schemas/policy.py, schemas/token.py, schemas/user.py</div>
+  <div class="desc">All currently empty — planned Pydantic schemas for request/response validation on the API endpoints.</div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ========== 10. DATABASE ========== -->
+<h1 id="db">10. backend/app/db/ — Database Layer</h1>
+<p>The database layer handles storing and retrieving all claim data from PostgreSQL. It follows the Repository pattern — each type of data has its own repository class with methods like get, create, update, delete.</p>
+
+<h3>db/models/ — Database Table Definitions</h3>
+<p>These files define what tables exist in PostgreSQL using SQLAlchemy ORM. All currently empty but planned:</p>
+<table>
+  <tr><th>Model File</th><th>Table Purpose</th></tr>
+  <tr><td><code>models/claim.py</code></td><td>Stores claim records — ID, patient info, status, amounts, timestamps</td></tr>
+  <tr><td><code>models/policy.py</code></td><td>Stores references to uploaded policy PDFs and their vector store status</td></tr>
+  <tr><td><code>models/fraud_flag.py</code></td><td>Stores fraud findings for each claim — type, score, evidence, recommendation</td></tr>
+  <tr><td><code>models/letter.py</code></td><td>Stores generated letters — content, recipient type, sent status</td></tr>
+  <tr><td><code>models/user.py</code></td><td>Stores users — name, email, hashed password, role (patient/hospital/insurer)</td></tr>
+</table>
+
+<h3>db/repositories/ — Data Access Functions</h3>
+<table>
+  <tr><th>Repository File</th><th>What It Does</th></tr>
+  <tr><td><code>repositories/base.py</code></td><td>Generic CRUD operations (Create, Read, Update, Delete) that all other repositories inherit</td></tr>
+  <tr><td><code>repositories/claim_repo.py</code></td><td>Claim-specific queries — get claims by patient, get pending claims, get claims by status</td></tr>
+  <tr><td><code>repositories/fraud_repo.py</code></td><td>Get fraud flags by claim, get high-risk claims, aggregate fraud statistics</td></tr>
+  <tr><td><code>repositories/letter_repo.py</code></td><td>Get letters by claim, mark letters as sent, get unsent letters</td></tr>
+  <tr><td><code>repositories/policy_repo.py</code></td><td>Track which policies are indexed in the vector store</td></tr>
+  <tr><td><code>repositories/user_repo.py</code></td><td>Find user by email, verify password, update user profile</td></tr>
+</table>
+
+<h3>db/migrations/ — Database Version Control</h3>
+<p>Uses Alembic (a Python migration tool) to track changes to the database schema over time. When you add a new column to a table, you create a migration file that can be applied or rolled back.</p>
+
+<div class="file-box">
+  <div class="filename">db/session.py</div>
+  <div class="desc">Planned to create and manage database connection pools using SQLAlchemy. Would provide a <code>get_db()</code> function that API routes use to get a database session.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">db/base_class.py</div>
+  <div class="desc">Planned to define the base SQLAlchemy model that all other models inherit from. Provides common fields like <code>id</code>, <code>created_at</code>, <code>updated_at</code>.</div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ========== 11. ML ========== -->
+<h1 id="ml">11. backend/app/ml/ — Machine Learning</h1>
+<p>The ML folder holds the statistical fraud detection model and related utilities.</p>
+
+<div class="file-box">
+  <div class="filename">ml/isolation_forest.py</div>
+  <div class="desc">Planned: Defines and trains a scikit-learn Isolation Forest model. Isolation Forest is an unsupervised anomaly detection algorithm — it finds data points that are "isolated" from the rest. In the fraud context: if a hospital bills ₹5 lakh for dengue when the average is ₹1 lakh, the ₹5 lakh claim gets a high anomaly score.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">ml/data_prep.py</div>
+  <div class="desc">Planned: Converts claim JSON data into numerical feature vectors that the ML model can process. For example: converts "3 days hospitalization + ₹50,000 cost + 5 tests" into a numerical array [3, 50000, 5].</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">ml/model_registry.py</div>
+  <div class="desc">Planned: Saves and loads trained ML model weights. So you train the model once on historical data and then load it for each new claim.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">ml/evaluate.py</div>
+  <div class="desc">Planned: Measures how accurate the fraud model is using historical labeled data (known fraud cases).</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">ml/test_ocr.py</div>
+  <div class="desc">A standalone test script — not really ML. Processes a specific image file at <code>temp_uploads/sample_image2.jpg</code>, prints the OCR output, and saves it to <code>ocr_output.json</code>. Used during development to quickly test OCR quality.</div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ========== 12. PIPELINES ========== -->
+<h1 id="pipelines">12. backend/app/pipelines/ — RAG Pipeline</h1>
+<p>RAG stands for Retrieval Augmented Generation. Instead of asking an AI "does this claim cover dengue?", RAG first searches the actual policy PDF for relevant sections, then sends those sections + the question to the AI. This gives much more accurate and citable answers.</p>
+
+<div class="file-box">
+  <div class="filename">pipelines/rag_orchestrator.py</div>
+  <div class="desc">Planned: Coordinates the full RAG pipeline using LlamaIndex. Takes a claim and a policy, retrieves the most relevant policy sections using vector similarity, and generates a coverage decision with exact citations.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">pipelines/document_chunking.py</div>
+  <div class="desc">Planned: Splits long policy PDFs into smaller overlapping text chunks (e.g., 500 words each with 50-word overlap). Smaller chunks are easier for the AI to search through meaningfully.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">pipelines/query_engine.py</div>
+  <div class="desc">Planned: The search component — takes a natural language query ("is dengue covered after 6 months?"), converts it to a vector embedding, searches Pinecone for the closest matching policy chunks, and returns them.</div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ========== 13. CORE ========== -->
+<h1 id="core">13. backend/app/core/ — Config, Logging, Security</h1>
+
+<div class="file-box">
+  <div class="filename">core/ocr_engine.py</div>
+  <div class="desc">
+    Contains the <code>ClaimHeartOCR</code> class — a wrapper around Tesseract OCR (different from the EasyOCR in utils/ocr.py).
+    <ul>
+      <li><code>extract_from_image(image_path)</code> — preprocesses the image using <code>image_processing.preprocess_for_ocr()</code> then runs Tesseract with OCR Engine Mode 1 (neural network) and Page Segmentation Mode 3 (fully automatic)</li>
+      <li><code>extract_from_pdf(pdf_path)</code> — converts each PDF page to an image using pdf2image, then runs Tesseract on each page and concatenates the text</li>
+    </ul>
+    This is used by <code>tests/agents/test_extractor.py</code> to test the full pipeline.
+  </div>
+</div>
+
+<div class="file-box">
+  <div class="filename">core/config.py</div>
+  <div class="desc">Planned: Loads environment variables (database URL, API keys, Redis URL, JWT secret) using Pydantic BaseSettings. Makes all config available as typed Python objects throughout the app.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">core/logging.py</div>
+  <div class="desc">Planned: Configures structured JSON logging with trace IDs so you can track a single request across all the agent calls.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">core/security.py</div>
+  <div class="desc">Planned: Password hashing (bcrypt), JWT token creation and verification for user authentication.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">core/exceptions.py</div>
+  <div class="desc">Planned: Custom exception classes and global error handlers that return standardized JSON error responses.</div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ========== 14. BACKEND SCRIPTS ========== -->
+<h1 id="backend-scripts">14. Backend Standalone Scripts</h1>
+<p>These Python files in the <code>backend/</code> root are standalone scripts for testing and batch operations. You run them directly with <code>python filename.py</code>.</p>
+
+<div class="file-box">
+  <div class="filename">backend/extract_image.py</div>
+  <div class="desc">Processes a hardcoded file <code>app/docs/image.png</code>. Prints the extracted text and structured data to console, then saves to <code>ocr_output.json</code>. Quickest way to test OCR on a sample file.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">backend/extract_ocr.py</div>
+  <div class="desc">Flexible version — accepts command-line arguments: <code>python extract_ocr.py image.jpg -o results/output.json</code>. Shows the first 500 characters of extracted text in the console, full data in the output file. Has a hardcoded default path for Windows (<code>D:\claimHeart\backend\temp_uploads\image.png</code>).</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">backend/batch_extract.py</div>
+  <div class="desc">Processes ALL images in a folder. Usage: <code>python batch_extract.py temp_uploads/</code>. Saves each image's JSON result as <code>imagename_ocr.json</code> in the outputs folder. Also creates a summary JSON with success/failure counts. Good for processing many claims at once.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">backend/process_image.py</div>
+  <div class="desc">Similar to extract_image.py but uses the image filename for the output (e.g., <code>image.png</code> → <code>outputs/image.json</code>). Shows structured data in console.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">backend/test_api.py</div>
+  <div class="desc">Tests the running API server. Calls <code>/api/health</code> and <code>/api/ocr/process-local</code> and prints the responses. You must start the server first with uvicorn, then run this script.</div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ========== 15. FRONTEND OVERVIEW ========== -->
+<h1 id="frontend-overview">15. Frontend Overview</h1>
+<p>The frontend is a Next.js 14 (App Router) application. It is a demo that currently stores all data in the browser's localStorage — no real backend calls are made for the dashboards. The backend OCR API is separate.</p>
+
+<pre>
+frontend/
+├── app/                    ← Next.js pages (file-system routing)
+├── components/             ← Reusable React components
+├── lib/                    ← Utility functions and API clients
+├── store/                  ← Zustand global state management
+├── hooks/                  ← Custom React hooks
+├── types/                  ← TypeScript type definitions
+├── styles/                 ← Global CSS
+├── public/                 ← Static assets (images, documents, favicon)
+└── tests/                  ← E2E and unit tests (empty)
+</pre>
+
+<div class="box">
+<strong>Key technologies used:</strong>
+<span class="tag tag-blue">Next.js 14</span>
+<span class="tag tag-blue">React 19</span>
+<span class="tag">TypeScript</span>
+<span class="tag">Tailwind CSS 4</span>
+<span class="tag tag-green">Zustand</span>
+<span class="tag tag-orange">Framer Motion</span>
+<span class="tag">Lucide Icons</span>
+<span class="tag">Sonner (toasts)</span>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ========== 16. NEXT APP FOLDER ========== -->
+<h1 id="next-app">16. frontend/app/ — Next.js Pages and Routes</h1>
+<p>In Next.js App Router, every <code>page.tsx</code> file becomes a URL. The folder structure defines the URL path. Here is every page and what it shows:</p>
+
+<table>
+  <tr><th>File Path</th><th>URL</th><th>What It Shows</th></tr>
+  <tr><td><code>app/page.tsx</code></td><td>/</td><td>Landing page — marketing page explaining ClaimHeart to new visitors</td></tr>
+  <tr><td><code>app/login/page.tsx</code></td><td>/login</td><td>Login page with role selector (patient/hospital/insurer) and demo credentials</td></tr>
+  <tr><td><code>app/auth/login/page.tsx</code></td><td>/auth/login</td><td>Alternate login route — renders the same LoginPage component</td></tr>
+  <tr><td><code>app/auth/signup/page.tsx</code></td><td>/auth/signup</td><td>Signup page where you can create a new demo account with your chosen role</td></tr>
+  <tr><td><code>app/dashboard/page.tsx</code></td><td>/dashboard</td><td>Redirects to the right dashboard based on your role (/dashboard/insurer, /dashboard/hospital, or /dashboard/patient)</td></tr>
+  <tr><td><code>app/dashboard/insurer/page.tsx</code></td><td>/dashboard/insurer</td><td>Insurance Company command center — shows claim queue, runs AI review pipeline, shows agent results</td></tr>
+  <tr><td><code>app/dashboard/insurer/review/[id]/page.tsx</code></td><td>/dashboard/insurer/review/:id</td><td>Full insurer review screen for a specific claim — shows AI results, documents, audit trail, approve/deny buttons</td></tr>
+  <tr><td><code>app/dashboard/insurer/notifications/page.tsx</code></td><td>/dashboard/insurer/notifications</td><td>All notifications for the insurer (new claims received, fraud alerts, etc.)</td></tr>
+  <tr><td><code>app/dashboard/hospital/page.tsx</code></td><td>/dashboard/hospital</td><td>Hospital intake workspace — select a case, upload documents, run OCR scan, submit claim to insurer</td></tr>
+  <tr><td><code>app/dashboard/hospital/claims/[id]/page.tsx</code></td><td>/dashboard/hospital/claims/:id</td><td>Hospital view of a specific claim — shows status, timeline, AI results visible to hospital</td></tr>
+  <tr><td><code>app/dashboard/hospital/notifications/page.tsx</code></td><td>/dashboard/hospital/notifications</td><td>Hospital notifications (document requests from insurer, claim decisions, etc.)</td></tr>
+  <tr><td><code>app/dashboard/patient/page.tsx</code></td><td>/dashboard/patient</td><td>Patient portal — shows claim status, decision letter, allows document uploads</td></tr>
+  <tr><td><code>app/dashboard/patient/claims/[id]/page.tsx</code></td><td>/dashboard/patient/claims/:id</td><td>Patient view of a specific claim</td></tr>
+  <tr><td><code>app/dashboard/patient/notifications/page.tsx</code></td><td>/dashboard/patient/notifications</td><td>Patient notifications (claim approved/denied, documents needed)</td></tr>
+  <tr><td><code>app/claims/page.tsx</code></td><td>/claims</td><td>Full claims queue table — insurer view of all claims with filters (pending, approved, denied, under_review)</td></tr>
+  <tr><td><code>app/claims/[id]/page.tsx</code></td><td>/claims/:id</td><td>Detail view of a specific claim (insurer perspective) — same as /dashboard/insurer/review/:id</td></tr>
+  <tr><td><code>app/fraud/page.tsx</code></td><td>/fraud</td><td>Fraud alerts dashboard — shows fraud score charts and active alert feed</td></tr>
+  <tr><td><code>app/letters/page.tsx</code></td><td>/letters</td><td>Letters management — placeholder page, letter workflows planned</td></tr>
+  <tr><td><code>app/policies/page.tsx</code></td><td>/policies</td><td>Policy library — browse indexed insurance policies, search clauses, see AI highlights</td></tr>
+  <tr><td><code>app/reports/page.tsx</code></td><td>/reports</td><td>Analytics — monthly trends, fraud prevention stats, ICD-10 code usage, processing speed</td></tr>
+  <tr><td><code>app/settings/page.tsx</code></td><td>/settings</td><td>Platform controls — toggle auto-approve, fraud review escalation, email alerts, PII redaction</td></tr>
+</table>
+
+<h3>Special Files in app/</h3>
+<div class="file-box">
+  <div class="filename">app/layout.tsx</div>
+  <div class="desc">The root layout that wraps EVERY page. It renders the <code>AppBootstrap</code> component (which seeds demo data into localStorage on first load), adds the Sonner toast notification provider, and sets metadata (title, description, favicon, OpenGraph tags).</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">app/api/auth/[...nextauth]/route.ts</div>
+  <div class="desc">A Next.js API route for authentication. Currently returns 501 Not Implemented — NextAuth was planned but not fully integrated. Login currently works through localStorage directly.</div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ========== 17. COMPONENTS ========== -->
+<h1 id="components">17. frontend/components/ — React Components</h1>
+<p>Components are reusable UI building blocks. They are organized by feature domain.</p>
+
+<h2>components/app/ — App-Level Setup</h2>
+<div class="file-box">
+  <div class="filename">components/app/AppBootstrap.tsx</div>
+  <div class="desc">Runs once when the app loads. Calls <code>seedIfEmpty()</code> from <code>lib/mockData.ts</code> to populate localStorage with demo users, claims, and notifications if they don't exist yet. Also renders the Sonner <code>Toaster</code> for toast notifications. Every page benefits from this because it's rendered inside the root layout.</div>
+</div>
+
+<h2>components/layout/ — Shell and Navigation</h2>
+<div class="file-box">
+  <div class="filename">components/layout/DashboardLayout.tsx (= AppShell.tsx)</div>
+  <div class="desc">
+    The main application shell used by all dashboard pages. It renders:
+    <ul>
+      <li>A fixed left sidebar with navigation links — different links shown depending on user role (insurer sees Claims Queue, Policy Library, Reports; hospital sees only Dashboard and Notifications; patient sees only Dashboard and Notifications)</li>
+      <li>A collapse/expand button for the sidebar</li>
+      <li>A mobile hamburger menu that slides in from the left</li>
+      <li>A top header with a search bar placeholder, a "Live" badge, a notification bell, and a primary action button</li>
+      <li>A main content area with page transition animations</li>
+    </ul>
+    It reads the current route to determine which nav item is "active" and which role-specific dashboard path to use. Uses Zustand store sync on mount.
+  </div>
+</div>
+
+<div class="file-box">
+  <div class="filename">components/layout/Navbar.tsx</div>
+  <div class="desc">The marketing navigation bar on the landing page (not the dashboard). Has the ClaimHeart logo, links to Features/How It Works/Demo/Docs sections, Login and Get Started buttons. Has a mobile hamburger menu.</div>
+</div>
+
+<h2>components/claims/ — Claim-Related Components</h2>
+
+<div class="file-box">
+  <div class="filename">components/claims/AgentResultCard.tsx</div>
+  <div class="desc">Displays the result of one AI agent (Policy, Medical, or Cross-Check). Shows a colored card based on status: green for "pass", red for "flag", grey for "pending". Includes the agent name, a "Decision Rationale" label, the reason text, a confidence percentage, and highlights (key evidence points). Has a colored left border accent. Used on insurer review page and patient dashboard.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">components/claims/StatusBadge.tsx</div>
+  <div class="desc">A small colored pill showing claim status. "pending" = amber, "approved" = green, "denied" = red, "under_review" = blue. Uses Framer Motion to animate with a subtle scale bounce when the status changes.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">components/claims/TimelineView.tsx</div>
+  <div class="desc">Shows the event history of a claim as a vertical timeline. Each event has a colored dot (blue for insurer actions, amber for hospital, teal for patient, grey for system) and a card with the label and time. Shows relative time ("5 minutes ago") after the page has hydrated to avoid server/client mismatch. Uses staggered Framer Motion animations.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">components/claims/UploadBox.tsx</div>
+  <div class="desc">Drag-and-drop file upload area. Shows an upload cloud icon when empty, a paperclip when files are attached. Supports drag-over styling. Shows a list of attached files with their size and type. Has a success animation ("Files attached") when files are added. Used on the patient dashboard for uploading supporting documents.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">components/claims/DecisionPanel.tsx</div>
+  <div class="desc">Three buttons (Approve / Deny / Return to Pending) plus a letter preview. Used on insurer review pages to record the final decision.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">components/claims/ClaimDrawer.tsx</div>
+  <div class="desc">A slide-in panel from the right side of the screen showing claim details. Used as a quick preview without navigating to a full page. Shows agent results, timeline, documents, and a comment box. Has a semi-transparent backdrop. Role-aware — patients see the decision letter, others see comment controls.</div>
+</div>
+
+<h2>components/pages/ — Full Page Components</h2>
+<p>These are the actual page content components. The files in <code>app/</code> are just thin wrappers that import these.</p>
+
+<div class="file-box">
+  <div class="filename">components/pages/DashboardPage.tsx</div>
+  <div class="desc">
+    The main insurer command center (the most complex component in the whole frontend). It:
+    <ul>
+      <li>Shows 4 KPI cards: Live Queue count, Manual Review count, Approved count, Portfolio value</li>
+      <li>Renders the active workflow claim with patient name, diagnosis, and hospital</li>
+      <li>Has a "Start AI Scan" button that triggers an animated pipeline simulation</li>
+      <li>When started: runs 4 scanning stages (document ingestion, RAG retrieval, policy grounding, evidence bundle) with progress bars and delays</li>
+      <li>Then runs 3 agent stages (Policy, Medical, Cross-Check) updating their cards one by one</li>
+      <li>Finally sets the claim status, generates a decision letter, and sends notifications</li>
+      <li>Shows an Audit Trail log of all steps with timestamps</li>
+      <li>Shows a queue snapshot of all workflow claims</li>
+      <li>Has a "Send Email" button that simulates sending the decision letter to the patient</li>
+    </ul>
+  </div>
+</div>
+
+<div class="file-box">
+  <div class="filename">components/pages/HospitalDashboardPage.tsx</div>
+  <div class="desc">
+    The hospital intake workspace. It:
+    <ul>
+      <li>Shows 3 workflow case options (Case 1: Waiting Period Denial, Case 2: Dengue Billing Fraud, Case 3: Dengue Approved)</li>
+      <li>For each case, shows the required document slots (pre-auth form, prescription, lab report, billing invoice)</li>
+      <li>Each slot has a file upload area with drag-and-drop</li>
+      <li>The "Run Intake Scan" button simulates OCR — shows a scanning animation on each document, then types out the extracted text character by character</li>
+      <li>A terminal console on the right shows live log messages as each document is processed</li>
+      <li>After processing, "Submit Claim" creates a new claim in the Zustand store and sends notifications</li>
+      <li>Recent submitted claims are listed at the bottom</li>
+    </ul>
+  </div>
+</div>
+
+<div class="file-box">
+  <div class="filename">components/pages/PatientDashboardPage.tsx</div>
+  <div class="desc">Patient portal. Shows: beneficiary selector (switches between the 3 demo cases), claim status with approved/requested amounts, timeline and agent summary, a document upload box for supporting evidence, a policy excerpt from the actual HDFC ERGO policy text file, and the decision letter once the insurer has finished review.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">components/pages/InsurerReviewPage.tsx</div>
+  <div class="desc">Full claim review page for insurers. Shows: agent result cards, documents list, a comment box (with internal/public visibility toggle), a decision panel (approve/deny/under_review with a note field), a "Request Documents" input, and an audit trail timeline. This is where the insurer makes the final call.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">components/pages/LandingPage.tsx</div>
+  <div class="desc">The marketing homepage. Has: hero section with animated console terminal, stats counter section (count-up animation), problem statement cards, agent architecture section, how-it-works workflow steps, differentiators, impact metrics, testimonials carousel, FAQ accordion, and footer with links. Uses Framer Motion for scroll-triggered animations throughout.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">components/pages/LoginPage.tsx</div>
+  <div class="desc">Two-column login page. Left column has: role selector buttons (patient/hospital/insurer), a demo credentials panel that auto-fills email+password for the selected role, email and password inputs, and social login buttons (Google/Apple/Microsoft — shows a toast saying they're UI-only). Right column has: an AuthShowcase with an image slider cycling through 4 hospital photos.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">components/pages/NotificationsPage.tsx</div>
+  <div class="desc">Shows all notifications for the current role. Filters notifications from the Zustand store by role and userId. Marks notifications as read when clicked. Has a "Mark all read" button. Shows relative time ("5 minutes ago"). Each notification card has a colored left border based on type (info=blue, success=green, warning=amber, action=red).</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">components/pages/ClaimsQueuePage.tsx</div>
+  <div class="desc">The full claims table for insurers. Has filter buttons (All/Pending/Under Review/Approved/Denied), a search bar, and a table with Claim ID, Patient, Hospital, Status, and a Review link. On mobile, shows cards instead of a table. Highlights new claims submitted in the last 10 minutes with a "New" badge.</div>
+</div>
+
+<h2>components/ui/ — Generic UI Primitives</h2>
+
+<div class="file-box">
+  <div class="filename">components/ui/MotionCard.tsx</div>
+  <div class="desc">A simple wrapper that adds a <code>whileHover={{ y: -3 }}</code> Framer Motion effect. Any card wrapped in this will slightly float upward when hovered. Used extensively on dashboard cards.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">components/ui/LiveBadge.tsx</div>
+  <div class="desc">Shows a green pulsing dot with "Live" text. Watches the Zustand store's <code>lastSyncAt</code> timestamp — when it changes (because a new claim was added or state updated), the badge briefly glows green, indicating fresh data.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">components/ui/NotifBell.tsx</div>
+  <div class="desc">The notification bell icon in the top header. Shows an unread count badge. On click, shows a dropdown with the 4 most recent notifications and a link to the full notifications page. Clicking a notification marks it as read. Has keyboard support (Escape closes it) and outside-click detection.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">components/ui/Skeleton.tsx</div>
+  <div class="desc">Loading skeleton components. <code>SkeletonBlock</code> is a grey shimmer rectangle of any size. <code>SkeletonCard</code> is a full card with shimmer lines. Used on all pages while they wait for state to hydrate from localStorage.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">components/ui/PageTransition.tsx</div>
+  <div class="desc">Wraps page content with a fade-in + slide-up animation when navigating between pages. Uses Framer Motion. Every dashboard page is wrapped in this automatically by DashboardLayout.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">components/ui/ClaimHeartLogo.tsx</div>
+  <div class="desc">Renders the ClaimHeart logo from <code>/assets/claimHeartLogo.png</code>. Accepts className and imageClassName for sizing. Used in the navbar, sidebar, login page, and footer.</div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ========== 18. LIB ========== -->
+<h1 id="lib">18. frontend/lib/ — Utilities and API Clients</h1>
+
+<h2>lib/api/ — API Functions</h2>
+
+<div class="file-box">
+  <div class="filename">lib/api/auth.ts</div>
+  <div class="desc">
+    Handles user authentication — all stored in localStorage (demo mode). Key functions:
+    <ul>
+      <li><code>getCurrentUser()</code> — reads the current user from localStorage key "claimheart.currentUser"</li>
+      <li><code>loginUser(email, password, role)</code> — finds a matching user in the "users" localStorage array, sets them as current user</li>
+      <li><code>signupUser(payload)</code> — creates a new user object, adds it to the "users" array in localStorage, sets as current</li>
+      <li><code>logout()</code> — clears localStorage keys and redirects to /login</li>
+      <li><code>getDashboardPath(role)</code> — returns "/dashboard/insurer", "/dashboard/hospital", or "/dashboard/patient"</li>
+    </ul>
+  </div>
+</div>
+
+<div class="file-box">
+  <div class="filename">lib/api/claims.ts</div>
+  <div class="desc">
+    All claim operations. Key functions:
+    <ul>
+      <li><code>submitClaim(claimInput)</code> — creates a new Claim object with generated ID, adds it to Zustand store (which saves to localStorage), and fires <code>notifyClaimSubmitted()</code></li>
+      <li><code>recordDecision(id, status, note)</code> — updates a claim's status, appends a timeline entry, and fires <code>notifyDecisionMade()</code></li>
+      <li><code>sendDecisionEmail(id)</code> — creates a ClaimEmail object, appends it to the claim's emails array, fires <code>notifyDecisionEmailSent()</code></li>
+      <li><code>requestMoreDocuments(id, note)</code> — sets status to "under_review", fires <code>notifyDocumentRequested()</code></li>
+      <li><code>addClaimDocument(id, document, role)</code> — appends a document to the claim, fires <code>notifyDocumentUploaded()</code></li>
+      <li><code>addClaimComment(id, payload)</code> — adds a comment with visibility controls (internal to insurer, or visible to all)</li>
+      <li><code>buildDecisionLetter(claim)</code> — generates a patient-facing letter text from claim data</li>
+    </ul>
+  </div>
+</div>
+
+<div class="file-box">
+  <div class="filename">lib/api/notifications.ts</div>
+  <div class="desc">
+    Creates and adds notifications to the Zustand store. Each function targets the right roles:
+    <ul>
+      <li><code>notifyClaimSubmitted(claim)</code> → sends to "insurer" (new claim alert) and "patient" (your claim was submitted)</li>
+      <li><code>notifyDecisionMade(claim, decision, note)</code> → sends to "patient" (approved/denied message) and "hospital" (decision notification)</li>
+      <li><code>notifyDocumentRequested(claim, note)</code> → sends to both "patient" and "hospital" (action required)</li>
+      <li><code>notifyDocumentUploaded(claim, fileName, role)</code> → sends to "insurer" (new document ready to review)</li>
+      <li><code>notifyDecisionEmailSent(claim, subject)</code> → sends to "patient" (email was sent) and "hospital" (patient was notified)</li>
+    </ul>
+  </div>
+</div>
+
+<div class="file-box">
+  <div class="filename">lib/api/storage.ts</div>
+  <div class="desc">Two simple functions: <code>readStorage(key, fallback)</code> reads and JSON-parses a localStorage key (returns fallback if not found or invalid JSON), and <code>writeStorage(key, value)</code> JSON-stringifies and saves to localStorage. Handles SSR by checking for window existence. Used by auth.ts and throughout the app.</div>
+</div>
+
+<h2>lib/ — Core Utilities</h2>
+
+<div class="file-box">
+  <div class="filename">lib/mockData.ts</div>
+  <div class="desc">
+    The demo data seed file. Contains:
+    <ul>
+      <li><code>MOCK_USERS</code> — 3 pre-built users: Priya Sharma (patient), Apollo Hospitals Delhi (hospital), Star Health Insurance (insurer) with demo passwords</li>
+      <li><code>MOCK_CLAIMS</code> — 3 pre-built claims: CLM-001 (dengue, pending), CLM-002 (appendicitis, approved), CLM-003 (maternity, denied)</li>
+      <li><code>MOCK_NOTIFICATIONS</code> — 5 pre-built notifications covering various claim events</li>
+      <li><code>seedIfEmpty()</code> — called on app startup. If "users", "claims", or "notifications" are not in localStorage, it writes the mock data. Also auto-logs in as Star Health Insurance. This is what makes the demo work without any real backend.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="file-box">
+  <div class="filename">lib/demoWorkflow.ts</div>
+  <div class="desc">
+    The most complex library file. Defines the 3 demo workflow cases and all functions to work with them.
+    <br><br>
+    <strong>The 3 Demo Cases:</strong>
+    <ol>
+      <li><strong>Case 1 "Waiting Period Rejection"</strong> — Riya Sharma tries to claim for fever but her policy is only 14 months old. The 24-month general hospitalization waiting period hasn't completed. Result: Denied.</li>
+      <li><strong>Case 2 "Dengue Billing Fraud"</strong> — Arjun Mehta has a valid dengue claim but the hospital billed 3 PlateMax injections in one day (protocol allows max 2). Result: Manual Review.</li>
+      <li><strong>Case 3 "Dengue Claim Approved"</strong> — Same Arjun Mehta, same dengue, but corrected billing with only 2 injections. Result: Fully Approved.</li>
+    </ol>
+    Each case contains: patient profile, hospital info, insurer info, required document list, agent results (what each agent should find), final decision letter, and decision note.
+    <br><br>
+    Key functions:
+    <ul>
+      <li><code>loadDemoDocumentCorpus()</code> — fetches the 5 text files from <code>public/docs/</code> (policy.txt, pre-auth.txt, Prescription.txt, test-report.txt, billings.txt)</li>
+      <li><code>getCaseDocumentPreview()</code> — gets the text content for a specific document slot. For Case 3, it modifies the billing document to remove the 3rd PlateMax injection line</li>
+      <li><code>createWorkflowClaimInput()</code> — builds a partial Claim object from a demo case ready to be submitted</li>
+      <li><code>resolveViewerForRole()</code> — gets the right user identity for the current role (the patient for that case, the demo hospital user, or the demo insurer user)</li>
+    </ul>
+  </div>
+</div>
+
+<div class="file-box">
+  <div class="filename">lib/claimUi.ts</div>
+  <div class="desc">
+    UI utility functions and CSS class maps:
+    <ul>
+      <li><code>claimStatusClasses</code> — maps claim status to Tailwind CSS classes (pending=amber, approved=green, denied=red, under_review=blue)</li>
+      <li><code>notificationClasses</code> — maps notification type to Tailwind CSS border/background classes</li>
+      <li><code>actorDotClasses</code> — maps claim actor to dot color for timeline display</li>
+      <li><code>formatDateTime()</code> — formats ISO date to "15 Jan, 10:02 AM" in Indian locale</li>
+      <li><code>formatRelativeTime()</code> — formats to "5 minutes ago", "2 hours ago", "3 days ago"</li>
+      <li><code>isNewClaim()</code> — returns true if claim was submitted in the last 10 minutes</li>
+      <li><code>getNotificationHref()</code> — returns the correct URL to view a claim based on user role</li>
+    </ul>
+  </div>
+</div>
+
+<div class="file-box">
+  <div class="filename">lib/data.ts</div>
+  <div class="desc">Static mock data for charts and non-workflow pages: KPI dashboard numbers, monthly claims trend data, fraud scatter plot data, agent status data, fraud alerts list, full detailed claims list (6 sample claims with all fields), policy library data (3 insurance policies with clauses), and reports analytics data.</div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ========== 19. STORE ========== -->
+<h1 id="store">19. frontend/store/ — Zustand State Management</h1>
+
+<div class="file-box">
+  <div class="filename">store/useAppStore.ts</div>
+  <div class="desc">
+    The main global state store using Zustand. Holds ALL claims and notifications in memory. Key features:
+    <ul>
+      <li><code>claims: Claim[]</code> — array of all claims, deduplicated by ID</li>
+      <li><code>notifications: Notification[]</code> — array of all notifications</li>
+      <li><code>lastSyncAt: number</code> — timestamp of last state change (watched by LiveBadge)</li>
+      <li><code>addClaim(claim)</code> — prepends new claim, saves to localStorage</li>
+      <li><code>updateClaim(id, updates)</code> — merges updates into existing claim, saves to localStorage</li>
+      <li><code>addNotification(notification)</code> — prepends new notification, saves to localStorage</li>
+      <li><code>markNotificationRead(id)</code> — marks one notification as read, avoids unnecessary re-renders if already read</li>
+      <li><code>markAllNotificationsRead(role, userId)</code> — marks all matching notifications as read (matches by role and optionally by userId)</li>
+      <li><code>syncFromStorage()</code> — reads both "claims" and "notifications" from localStorage and updates the in-memory state. Called on page load and on the "storage" window event (so multiple tabs stay in sync)</li>
+    </ul>
+    The deduplication function (<code>dedupeById</code>) prevents the same claim appearing twice — important because claims can come from both seeding and live submission.
+  </div>
+</div>
+
+<div class="file-box">
+  <div class="filename">store/useClaimStore.ts</div>
+  <div class="desc">A lighter-weight, custom store for claim selection state. Uses React's <code>useSyncExternalStore</code> directly (no Zustand). Holds: the full claims array, the currently selected claim, and a hydrated flag. Has actions: setClaims, selectClaim, updateClaim. Used in some components that need fine-grained claim selection tracking without the full Zustand overhead.</div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ========== 20. HOOKS ========== -->
+<h1 id="hooks">20. frontend/hooks/ — Custom React Hooks</h1>
+
+<div class="file-box">
+  <div class="filename">hooks/usePageReady.ts</div>
+  <div class="desc">
+    Returns a boolean <code>ready</code> that starts as <code>false</code> and becomes <code>true</code> after the first browser animation frame (or after an optional delay). 
+    <br><br>
+    <strong>Why this is needed:</strong> Next.js renders pages on both the server (where localStorage doesn't exist) and the client. If you show localStorage data during server render, you get a hydration mismatch error. By returning <code>false</code> initially, components show skeleton loaders during SSR, then show real data only on the client.
+  </div>
+</div>
+
+<div class="file-box">
+  <div class="filename">hooks/useSyncStore.ts</div>
+  <div class="desc">Called inside DashboardLayout to initialize the app state. On mount: calls <code>seedIfEmpty()</code> to ensure demo data exists, then calls <code>syncFromStorage()</code> to load it into Zustand. Also adds a "storage" event listener so that when localStorage changes in another browser tab (e.g., you submit a claim in the hospital dashboard), this tab automatically re-syncs and shows the new claim.</div>
+</div>
+
+<div class="file-box">
+  <div class="filename">hooks/useClaims.ts, useFraudScore.ts, useDebounce.ts</div>
+  <div class="desc">All currently empty. Planned: useClaims would use React Query to fetch claims from the backend API with caching. useFraudScore would poll the backend for fraud score updates. useDebounce would delay search input to avoid excessive filtering on every keystroke.</div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ========== 21. TYPES ========== -->
+<h1 id="types">21. frontend/types/ — TypeScript Types</h1>
+
+<div class="file-box">
+  <div class="filename">types/index.ts</div>
+  <div class="desc">
+    The main type file. Defines all shared types:
+    <ul>
+      <li><code>ClaimStatus</code> — "pending" | "approved" | "denied" | "under_review"</li>
+      <li><code>AgentStatus</code> — "pass" | "flag" | "pending"</li>
+      <li><code>UserRole</code> — "patient" | "hospital" | "insurer"</li>
+      <li><code>ClaimActor</code> — "hospital" | "insurer" | "patient" | "system"</li>
+      <li><code>AgentResult</code> — {status, reason, confidence?, durationMs?, highlights?}</li>
+      <li><code>TimelineEntry</code> — {label, time, actor}</li>
+      <li><code>Comment</code> — {id, text, author, role, time, visibleTo[]}</li>
+      <li><code>UploadedDocument</code> — {name, type, size, uploadedAt, uploadedBy, category?, previewText?, sourceUrl?, processingStatus?}</li>
+      <li><code>ClaimEmail</code> — {id, to, subject, body, sentAt, sentBy, status}</li>
+      <li><code>Claim</code> — the main claim object with ~25 fields including all the above</li>
+      <li><code>Notification</code> — {id, targetRole, targetUserId?, claimId?, title, message, type, read, time}</li>
+      <li><code>AppUser</code> — {id, name, email, phone?, password, role, patientId?, dob?, policyNumber?, ...}</li>
+      <li><code>WorkflowAuditEntry</code> — {time, label, level}</li>
+    </ul>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ========== 22. DATA FLOW ========== -->
+<h1 id="data-flow">22. Complete Data Flow — End to End</h1>
+
+<h2>Backend OCR Data Flow</h2>
+
+<div class="flow-step"><span class="step-num">1.</span> Someone calls <code>POST /api/ocr/upload</code> with a file or <code>POST /api/ocr/process-local</code> with a path.</div>
+<div class="flow-step"><span class="step-num">2.</span> <code>api/routes/ocr.py</code> validates the file (type, size), saves temporarily if uploaded.</div>
+<div class="flow-step"><span class="step-num">3.</span> Calls <code>tasks/extraction.py → process_document(file_path)</code></div>
+<div class="flow-step"><span class="step-num">4.</span> Which calls <code>agents/extractor/agent.py → extractor_agent(file_path)</code></div>
+<div class="flow-step"><span class="step-num">5.</span> Which calls <code>utils/ocr.py → extract_text_from_image(file_path)</code></div>
+<div class="flow-step"><span class="step-num">6.</span> EasyOCR reads the image, returns a list of text strings, joined into one string.</div>
+<div class="flow-step"><span class="step-num">7.</span> Then calls <code>utils/parser.py → parse_medical_text(raw_text)</code></div>
+<div class="flow-step"><span class="step-num">8.</span> 8 regex functions extract patient name, age, gender, medications, dates, etc.</div>
+<div class="flow-step"><span class="step-num">9.</span> Returns <code>{"raw_text": "...", "structured_data": {...}}</code> back up the chain to the API response.</div>
+
+<h2>Frontend Demo Workflow Data Flow</h2>
+
+<div class="flow-step"><span class="step-num">1.</span> User visits the app. <code>AppBootstrap</code> → <code>seedIfEmpty()</code> → writes demo data to localStorage if not already there.</div>
+<div class="flow-step"><span class="step-num">2.</span> <code>DashboardLayout</code> mounts → <code>useSyncStore()</code> → <code>syncFromStorage()</code> → Zustand loads all claims and notifications from localStorage into memory.</div>
+<div class="flow-step"><span class="step-num">3.</span> Hospital Dashboard: User selects Case 2 (Dengue Fraud). <code>demoWorkflow.loadDemoDocumentCorpus()</code> fetches 5 text files from <code>public/docs/</code>.</div>
+<div class="flow-step"><span class="step-num">4.</span> Hospital uploads files to the 3 required slots (prescription, lab report, billing). Each slot is stored as a <code>DemoUploadSelection</code> in component state.</div>
+<div class="flow-step"><span class="step-num">5.</span> "Run Intake Scan" → for each document slot: shows scanning animation → shows extraction animation → types out the document text character by character.</div>
+<div class="flow-step"><span class="step-num">6.</span> "Submit Claim" → <code>createWorkflowClaimInput()</code> builds a Claim object → <code>lib/api/claims.submitClaim()</code> → <code>store.addClaim()</code> → saves to localStorage.</div>
+<div class="flow-step"><span class="step-num">7.</span> <code>notifyClaimSubmitted()</code> → creates 2 notifications (one for insurer, one for patient) → <code>store.addNotification()</code> twice → saves to localStorage.</div>
+<div class="flow-step"><span class="step-num">8.</span> If another tab is open (insurer dashboard), the "storage" window event fires → <code>syncFromStorage()</code> → the new claim appears in the insurer's queue.</div>
+<div class="flow-step"><span class="step-num">9.</span> Insurer clicks "Start AI Scan" on their dashboard. The scanning stages run with setTimeout delays. Each stage updates component state (not Zustand — this is local animation state).</div>
+<div class="flow-step"><span class="step-num">10.</span> After all stages complete: <code>store.updateClaim(id, finalDecision)</code> → claim status, decision letter, amountApproved, and pipelineCompletedAt are updated in Zustand and localStorage.</div>
+<div class="flow-step"><span class="step-num">11.</span> <code>notifyDecisionMade()</code> → 2 more notifications → patient and hospital are notified.</div>
+<div class="flow-step"><span class="step-num">12.</span> Patient dashboard re-renders with the updated claim status and decision letter (read from Zustand store which reads from localStorage).</div>
+
+<div class="section-divider"></div>
+
+<!-- ========== 23. PIPELINE FLOW ========== -->
+<h1 id="pipeline-flow">23. The Full Agent Pipeline — Step by Step</h1>
+<p>This is how a real claim SHOULD flow through the complete system (partly built, partly planned):</p>
+
+<div class="flow-step">
+  <span class="step-num">Step 1: Document Intake</span><br>
+  Hospital staff scan pre-auth form, discharge summary, lab reports, billing invoice → Upload via hospital dashboard → Files hit <code>POST /api/ocr/upload</code>
+</div>
+<div class="arrow">↓</div>
+<div class="flow-step">
+  <span class="step-num">Step 2: Extractor Agent (BUILT)</span><br>
+  <code>process_document()</code> → EasyOCR reads every page → <code>parse_medical_text()</code> extracts patient name, diagnosis, medications, amounts → Returns structured JSON. Then <code>ExtractorAgent</code> (Gemini) classifies document type and extracts using the right schema.
+</div>
+<div class="arrow">↓</div>
+<div class="flow-step">
+  <span class="step-num">Step 3: PII Redaction (PLANNED)</span><br>
+  Microsoft Presidio strips patient name, phone, ID from document copies before sending to AI models → Creates redacted copies stored separately in S3.
+</div>
+<div class="arrow">↓</div>
+<div class="flow-step">
+  <span class="step-num">Step 4: Policy RAG Agent (PLANNED)</span><br>
+  LlamaIndex retrieves matching policy clauses from Pinecone vector store → LLM reasons over them → Returns: covered/partially_covered/denied + exact clause citations with page numbers + amounts.
+</div>
+<div class="arrow">↓</div>
+<div class="flow-step">
+  <span class="step-num">Step 5: Fraud Investigator Agent (PLANNED — simulated in frontend)</span><br>
+  Rule engine checks: duplicate claims, waiting period, test count vs protocol → Isolation Forest checks cost anomaly vs regional baseline → LLM reasons over findings → Returns: fraud_score 0-100, evidence list, recommendation (approve/query/reject/dispatch_agent).
+</div>
+<div class="arrow">↓</div>
+<div class="flow-step">
+  <span class="step-num">Step 6: TAT Monitor (PLANNED — simulated)</span><br>
+  Checks SLA timers — was initial approval given within 1 hour? Is discharge approval due within 3 hours? If breach risk, escalates to senior reviewer and notifies hospital.
+</div>
+<div class="arrow">↓</div>
+<div class="flow-step">
+  <span class="step-num">Step 7: Decision Aggregator (PLANNED — simulated)</span><br>
+  Merges all 3 agent outputs → Resolves conflicts → Produces final decision packet: status + approved_amount + rationale + evidence.
+</div>
+<div class="arrow">↓</div>
+<div class="flow-step">
+  <span class="step-num">Step 8: Mediator Agent (PLANNED — built in frontend)</span><br>
+  Generates 3 communications: (1) Patient letter in simple language — approved X, denied Y, here's why, here's what to do next. (2) Hospital query (if docs missing). (3) Insurer summary with full audit trail.
+</div>
+<div class="arrow">↓</div>
+<div class="flow-step">
+  <span class="step-num">Step 9: Notifications and Dashboards</span><br>
+  All 3 dashboards update. Patient sees decision letter. Hospital sees query or approval. Insurer sees explainable decision with evidence. SMS/email sent to patient.
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ========== 24. FILE CONNECTIONS ========== -->
+<h1 id="file-connections">24. How Files Talk to Each Other</h1>
+
+<h2>Backend Import Chain</h2>
+<pre>
+main.py
+  └── imports: api/routes/ocr.py
+                api/routes/health.py  
+                api/routes/claims.py
+
+api/routes/ocr.py
+  └── imports: tasks/extraction.py → process_document()
+
+tasks/extraction.py
+  └── imports: agents/extractor/agent.py → extractor_agent()
+
+agents/extractor/agent.py
+  └── imports: utils/ocr.py → extract_text_from_image()
+               utils/parser.py → parse_medical_text()
+
+utils/ocr.py
+  └── uses: EasyOCR library (installed via requirements.txt)
+
+utils/parser.py
+  └── uses: Python re (regex) — no imports needed
+
+services/extractor_agent.py (separate flow, used by tests)
+  └── imports: schemas/bill_schema.py → BILL_PROMPT
+               schemas/report_schema.py → REPORT_SCHEMA
+               schemas/discharge_schema.py → DISCHARGE_SCHEMA
+               schemas/pharmacy_schema.py → PHARMACY_PROMPT
+               schemas/claim_schema.py → CLAIM_SCHEMA
+  └── uses: google.genai library (Gemini API)
+
+tests/agents/test_extractor.py
+  └── imports: core/ocr_engine.py → ClaimHeartOCR
+               services/extractor_agent.py → ExtractorAgent
+
+core/ocr_engine.py
+  └── imports: utils/image_processing.py → preprocess_for_ocr()
+  └── uses: pytesseract, pdf2image libraries
+</pre>
+
+<h2>Frontend Import Chain</h2>
+<pre>
+app/layout.tsx
+  └── renders: components/app/AppBootstrap.tsx
+                  └── calls: lib/mockData.seedIfEmpty()
+
+app/dashboard/insurer/page.tsx
+  └── renders: components/pages/DashboardPage.tsx
+                  └── imports: store/useAppStore → claims, notifications, updateClaim
+                               lib/api/auth → getCurrentUser()
+                               lib/api/claims → sendDecisionEmail(), notifyDecisionMade()
+                               lib/demoWorkflow → getDemoCaseById(), resolveViewerForRole()
+                               components/claims/AgentResultCard
+                               components/ui/MotionCard, Skeleton
+
+app/dashboard/hospital/page.tsx  
+  └── renders: components/pages/HospitalDashboardPage.tsx
+                  └── imports: store/useAppStore → claims
+                               lib/api/claims → submitClaim()
+                               lib/demoWorkflow → DEMO_WORKFLOW_CASES, loadDemoDocumentCorpus()
+                               components/pages/RecentActivityCard
+
+app/dashboard/patient/page.tsx
+  └── renders: components/pages/PatientDashboardPage.tsx
+                  └── imports: store/useAppStore → claims
+                               lib/api/claims → addClaimDocument()
+                               lib/demoWorkflow → getDemoCaseById(), DEMO_WORKFLOW_CASES
+                               components/claims/AgentResultCard, TimelineView, UploadBox
+
+Any page with DashboardLayout
+  └── renders: components/layout/DashboardLayout.tsx
+                  └── calls hook: hooks/useSyncStore.ts
+                                    └── calls: lib/mockData.seedIfEmpty()
+                                               store/useAppStore.syncFromStorage()
+                  └── renders: components/ui/NotifBell
+                                  └── imports: store/useAppStore → notifications
+                               components/ui/LiveBadge
+                                  └── imports: store/useAppStore → lastSyncAt
+
+lib/api/claims.ts
+  └── imports: store/useAppStore → addClaim(), updateClaim(), addNotification()
+               lib/api/notifications → notifyClaimSubmitted(), notifyDecisionMade(), etc.
+               lib/demoWorkflow → getDemoCaseById()
+
+lib/api/notifications.ts
+  └── imports: store/useAppStore → addNotification()
+
+lib/api/auth.ts
+  └── imports: lib/api/storage → readStorage(), writeStorage()
+</pre>
+
+<div class="section-divider"></div>
+
+<!-- ========== 25. DEMO WORKFLOW ========== -->
+<h1 id="demo-workflow">25. The 3 Demo Workflow Cases Explained</h1>
+
+<h2>Case 1 — Waiting Period Rejection</h2>
+<div class="box">
+<strong>Patient:</strong> Riya Sharma | <strong>Policy:</strong> HDFC-ERGO-2025-784512 (started 25 Jan 2025)<br>
+<strong>Request:</strong> Pre-auth for fever/acute febrile illness, 02 Apr 2026<br>
+<strong>Problem:</strong> Policy is only 14 months old. Clause 3.2 requires 24 months for general hospitalization.<br>
+<strong>Required Document:</strong> Pre-authorisation Form (pre-auth.txt)<br>
+<strong>Expected Outcome:</strong> Denied. Policy agent cites Clause 3.2 and Section 6.4 (auto-rejection rule).
+</div>
+
+<div class="box-grey">
+<strong>What each agent finds:</strong><br>
+Policy Agent: FLAG — "Policy has not completed 24-month waiting period" (confidence 98%)<br>
+Medical Agent: PASS — "Clinical submission is internally consistent but coverage fails due to policy timing" (confidence 88%)<br>
+Cross Agent: FLAG — "No continuity evidence to override waiting period trigger" (confidence 95%)
+</div>
+
+<h2>Case 2 — Dengue Billing Fraud (Manual Review)</h2>
+<div class="box">
+<strong>Patient:</strong> Arjun Mehta | <strong>Policy:</strong> HDFC-ERGO-2025-991203 (started 10 Mar 2023)<br>
+<strong>Admission:</strong> 05 Apr 2026 | <strong>Amount:</strong> ₹22,150<br>
+<strong>Problem:</strong> Billing shows 3 PlateMax IV injections in one day. Policy Section 5.2 allows max 2 per 24 hours.<br>
+<strong>Required Documents:</strong> Prescription, Platelet Test Report, Hospital Billing Invoice (billings.txt has the 3rd injection)<br>
+<strong>Expected Outcome:</strong> Manual Review — hospital must explain the 3rd dose.
+</div>
+
+<div class="box-grey">
+<strong>What each agent finds:</strong><br>
+Policy Agent: PASS — "Policy tenure exceeds 24 months, dengue is covered" (confidence 96%)<br>
+Medical Agent: FLAG — "3 PlateMax IV administrations in 24 hours, above allowed frequency of 2" (confidence 97%)<br>
+Cross Agent: FLAG — "Prescription-billing mismatch — manual review required" (confidence 94%)
+</div>
+
+<h2>Case 3 — Dengue Claim Approved</h2>
+<div class="box">
+<strong>Patient:</strong> Arjun Mehta (same) | <strong>Amount:</strong> ₹17,740 (corrected)<br>
+<strong>Same documents</strong> but the billing invoice is different — the 3rd PlateMax injection line is removed. The billing total is ₹4,200 less.<br>
+<strong>Expected Outcome:</strong> Fully Approved — all documents align with policy and protocol.
+</div>
+
+<div class="box-grey">
+<strong>What each agent finds:</strong><br>
+Policy Agent: PASS — "Coverage active" (confidence 97%)<br>
+Medical Agent: PASS — "Two PlateMax doses within 24 hours, positive NS1 and IgM markers confirm dengue" (confidence 95%)<br>
+Cross Agent: PASS — "No mismatch across documents, full settlement can proceed" (confidence 96%)
+</div>
+
+<h2>The Public Document Files That Power the Demo</h2>
+<p>These files live in <code>frontend/public/docs/</code> and are fetched by <code>loadDemoDocumentCorpus()</code>:</p>
+
+<table>
+  <tr><th>File</th><th>What It Contains</th><th>Used For</th></tr>
+  <tr><td><code>policy.txt</code></td><td>Full 800-line HDFC ERGO insurance policy document with all clauses, waiting periods, exclusions, fraud detection triggers</td><td>Policy Agent evidence text, displayed to patient in coverage snapshot</td></tr>
+  <tr><td><code>pre-auth.txt</code></td><td>A pre-authorisation request form for Riya Sharma with Case 1 details (fever, 02 Apr 2026)</td><td>Case 1 document slot</td></tr>
+  <tr><td><code>Prescription.txt</code></td><td>Outpatient prescription for Arjun Mehta — lists Tab Paracetamol, Syp Electral, Inj PlateMax, Tab Pantoprazole</td><td>Cases 2 and 3 document slot</td></tr>
+  <tr><td><code>test-report.txt</code></td><td>Lab report from Metro Diagnostics — CBC results showing critically low platelets (68,000/mcL), positive NS1 antigen and IgM dengue markers</td><td>Cases 2 and 3 document slot</td></tr>
+  <tr><td><code>billings.txt</code></td><td>Hospital tax invoice for Arjun Mehta — includes 3 PlateMax IV administrations (FRAUD CASE). For Case 3, the 3rd line is programmatically removed and totals recalculated.</td><td>Cases 2 and 3 billing slot (modified for Case 3)</td></tr>
+</table>
+
+<div class="section-divider"></div>
+
+<!-- FINAL SUMMARY -->
+<h1>Quick Reference: What Is Built vs Planned</h1>
+
+<table>
+  <tr><th>Component</th><th>Status</th><th>Notes</th></tr>
+  <tr><td>EasyOCR image extraction</td><td><span class="tag tag-green">BUILT</span></td><td>utils/ocr.py</td></tr>
+  <tr><td>Regex medical text parser</td><td><span class="tag tag-green">BUILT</span></td><td>utils/parser.py</td></tr>
+  <tr><td>OCR API endpoints</td><td><span class="tag tag-green">BUILT</span></td><td>api/routes/ocr.py</td></tr>
+  <tr><td>Gemini document classifier</td><td><span class="tag tag-green">BUILT</span></td><td>services/extractor_agent.py</td></tr>
+  <tr><td>Policy RAG Agent</td><td><span class="tag tag-orange">PLANNED</span></td><td>agents/policy/ all empty</td></tr>
+  <tr><td>Fraud Investigator Agent</td><td><span class="tag tag-orange">PLANNED</span></td><td>agents/investigator/ all empty</td></tr>
+  <tr><td>Isolation Forest ML</td><td><span class="tag tag-orange">PLANNED</span></td><td>ml/ all empty</td></tr>
+  <tr><td>Mediator Agent</td><td><span class="tag tag-orange">PLANNED</span></td><td>agents/mediator/ all empty</td></tr>
+  <tr><td>Database models & repos</td><td><span class="tag tag-orange">PLANNED</span></td><td>db/ all empty</td></tr>
+  <tr><td>User authentication</td><td><span class="tag tag-orange">PLANNED</span></td><td>core/security.py empty</td></tr>
+  <tr><td>Celery task queue</td><td><span class="tag tag-orange">PLANNED</span></td><td>tasks/worker.py empty</td></tr>
+  <tr><td>Frontend 3 dashboards</td><td><span class="tag tag-green">BUILT</span></td><td>Full demo with animations</td></tr>
+  <tr><td>Frontend state management</td><td><span class="tag tag-green">BUILT</span></td><td>Zustand + localStorage</td></tr>
+  <tr><td>Frontend AI pipeline sim</td><td><span class="tag tag-green">BUILT</span></td><td>Animated scan stages</td></tr>
+  <tr><td>Frontend 3 demo cases</td><td><span class="tag tag-green">BUILT</span></td><td>Full document corpus</td></tr>
+  <tr><td>Frontend notifications</td><td><span class="tag tag-green">BUILT</span></td><td>Cross-role notification system</td></tr>
+  <tr><td>Landing page</td><td><span class="tag tag-green">BUILT</span></td><td>Full marketing page</td></tr>
+  <tr><td>Docker infrastructure</td><td><span class="tag tag-orange">PLANNED</span></td><td>docker-compose.yml empty</td></tr>
+  <tr><td>CI/CD pipeline</td><td><span class="tag tag-orange">PLANNED</span></td><td>.github/workflows empty</td></tr>
+</table>
+
+<div style="margin-top:60px; padding:20px; background:#111; color:#fff; border-radius:6px; font-size:1.1rem;">
+  <strong>ClaimHeart — Summary</strong><br><br>
+  The backend has a working OCR pipeline using EasyOCR and regex parsing. The Gemini-based structured extraction also works. All 4 AI agents, the database, and the task queue are architecturally designed but not yet coded.<br><br>
+  The frontend is a complete, polished 3-dashboard demo that simulates the entire claims workflow in the browser using localStorage. It includes all animations, notifications, case switching, document corpus loading, and a realistic AI pipeline simulation. This is what you would demo to stakeholders or a hackathon jury.
+</div>
+
+<p style="text-align:center; color:#666; font-size:1rem; margin-top:40px;">ClaimHeart Project Documentation — Generated April 2026</p>
+
+</div>
+</body>
+</html>
