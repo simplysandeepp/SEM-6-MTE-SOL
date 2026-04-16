@@ -1,4 +1,4 @@
-# MTE Solutions — Java (Brute Force + Optimal)
+# AAPS MTE Solutions — Java (Brute Force + Optimal)
 
 ---
 
